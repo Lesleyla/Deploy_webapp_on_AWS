@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: csye6225
+          POSTGRES_PASSWORD: 123456
+          POSTGRES_DB: cloudwebapp
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Install dependencies & activate virtual environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3-venv
+          rm -rf venv
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install flask flask-sqlalchemy flask-session flask-bcrypt flask-httpauth psycopg2 pytest boto3 PyYAML statsd
+
+      - name: Run tests
+        run: |
+          source venv/bin/activate
+          pytest
+
+      - name: Deactivate virtual environment
+        run: source venv/bin/activate && deactivate
+
+      - name: Validate Packer Template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: validate
+          arguments: "-syntax-only"
+          target: us-west-2.pkr.hcl

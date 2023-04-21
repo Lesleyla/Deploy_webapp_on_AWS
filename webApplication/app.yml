@@ -1,0 +1,6 @@
+# app.yml
+RDS_USERNAME: csye6225
+RDS_PASSWORD: 123456
+RDS_HOSTNAME: localhost
+RDS_DATABASENAME: cloudwebapp
+S3_BUCKET_NAME: s3_bucket
